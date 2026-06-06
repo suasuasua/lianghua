@@ -1,5 +1,6 @@
 {
   "cash": 0.0,
+  "pending_cash": 0.0,
   "positions": {
     "Telecom": {
       "sector": "Telecom",
