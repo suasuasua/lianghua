@@ -48,7 +48,11 @@ body{font-family:-apple-system,'Segoe UI',sans-serif;background:#0f172a;color:#e
 <h1>版块轮动量化仪表盘 <span class="status">Live</span></h1>
 <div class="sub">__REPORT_DATE__ | __NUM_DAYS__交易日 | __DATE_RANGE__ | __NUM_SECTORS__个版块</div>
 </div>
-<div class="grid" id="app"></div>
+<div style="max-width:1600px;margin:0 auto;padding:0 16px">
+<div style="background:linear-gradient(135deg,#1e293b,#0f172a);border:1px solid #334155;border-radius:10px;padding:12px 20px;margin-bottom:16px;display:flex;justify-content:space-between;align-items:center">
+<div><span style="font-size:14px;font-weight:600">交易终端</span><span style="font-size:12px;color:#64748b;margin-left:10px">点击买卖按钮打开本地交易终端</span></div>
+<a href="http://localhost:5000" target="_blank" style="display:inline-block;padding:8px 20px;background:#22c55e;color:#fff;border-radius:8px;text-decoration:none;font-size:13px;font-weight:600">打开交易终端</a>
+</div></div><div class="grid" id="app"></div>
 <div class="footer">由 GitHub Actions 自动生成 | 数据来源: 腾讯财经 API | 不构成投资建议</div>
 <script>
 const DATA = __DATA_JSON__;
@@ -67,7 +71,8 @@ function renderApp() {
       const action = signals.actions[i];
       const cls = action === 'buy' ? 'badge-buy' : action === 'sell' ? 'badge-sell' : 'badge-hold';
       const label = action === 'buy' ? 'BUY' : action === 'sell' ? 'SELL' : 'HOLD';
-      return '<div class="signal-row"><span class="name">' + name + '</span><span class="score">' + signals.rankings[i].toFixed(3) + '</span><span class="action ' + cls + '">' + label + '</span></div>';
+      const tb = action !== 'hold' ? '<a href=\"http://localhost:5000\" target=\"_blank\" style=\"display:inline-block;padding:2px 8px;border-radius:4px;font-size:11px;text-decoration:none;margin-left:4px;color:#fff;background:' + (action === 'buy' ? '#22c55e' : '#ef4444') + '\">' + (action === 'buy' ? '买' : '卖') + '<\/a>' : '';
+      return '<div class="signal-row"><span class="name">' + name + '</span><span class="score">' + signals.rankings[i].toFixed(3) + '</span><span class="action ' + cls + '">' + tb + '</span>' + label + '</span></div>';
     }).join('');
     html.push('<div class="card"><div class="card-header">今日交易信号 <span class="badge badge-buy">BUY ' + buyCount + '</span></div><div class="signal-table">' + signalRows + '</div></div>');
   } else {
