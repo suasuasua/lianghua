@@ -1,20 +1,13 @@
-﻿# -*- coding: utf-8 -*-
-"""
-Portfolio tracker - tracks virtual positions, P&L, trade history
-"""
-import json
-import pathlib
+# -*- coding: utf-8 -*-
+"""Portfolio tracker - T+1: sell proceeds tracked as pending_cash"""
+import json, pathlib
 from dataclasses import dataclass, field, asdict
-from datetime import datetime
-from typing import Dict, List, Optional
-
+from typing import Dict
 import pandas as pd
-
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 PORTFOLIO_FILE = ROOT / "portfolio.json"
 TRADES_FILE = ROOT / "trades.json"
 DATA_FILE = ROOT / "sector_data.csv"
-
 
 @dataclass
 class Position:
@@ -23,42 +16,35 @@ class Position:
     avg_cost: float = 0.0
     total_cost: float = 0.0
 
-
 @dataclass
 class Portfolio:
     cash: float = 100000.0
+    pending_cash: float = 0.0
     positions: Dict[str, Position] = field(default_factory=dict)
-
 
 def load_portfolio() -> Portfolio:
     if PORTFOLIO_FILE.exists():
         data = json.loads(PORTFOLIO_FILE.read_text("utf-8"))
-        p = Portfolio(cash=data.get("cash", 100000))
-        for s, pos in data.get("positions", {}).items():
+        p = Portfolio(cash=data.get('cash', 100000), pending_cash=data.get('pending_cash', 0.0))
+        for s, pos in data.get('positions', {}).items():
             p.positions[s] = Position(**pos)
         return p
     return Portfolio()
 
-
 def save_portfolio(p: Portfolio):
-    data = {
-        "cash": p.cash,
-        "positions": {s: asdict(pos) for s, pos in p.positions.items()},
-    }
+    data = {"cash": p.cash, "pending_cash": p.pending_cash,
+            "positions": {s: asdict(pos) for s, pos in p.positions.items()}}
     PORTFOLIO_FILE.write_text(json.dumps(data, ensure_ascii=False, indent=2), "utf-8")
-
 
 def load_trades() -> list:
     if TRADES_FILE.exists():
         return json.loads(TRADES_FILE.read_text("utf-8"))
     return []
 
-
 def save_trade(trade: dict):
     trades = load_trades()
     trades.append(trade)
     TRADES_FILE.write_text(json.dumps(trades, ensure_ascii=False, indent=2), "utf-8")
-
 
 def get_current_prices() -> Dict[str, float]:
     """Get latest close prices from cached data"""
@@ -74,18 +60,15 @@ def get_current_prices() -> Dict[str, float]:
             prices[col] = float(latest[col])
     return prices
 
-
 def calc_portfolio_value(p: Portfolio, prices: Dict[str, float]) -> float:
-    """Calculate total portfolio value (cash + positions market value)"""
+    """Total value = cash + pending_cash + positions market value"""
     pos_value = 0.0
     for sector, pos in p.positions.items():
         price = prices.get(sector, 0)
         pos_value += pos.shares * price
-    return p.cash + pos_value
-
+    return p.cash + p.pending_cash + pos_value
 
 def calc_pnl(p: Portfolio, prices: Dict[str, float]) -> dict:
-    """Calculate P&L for each position and total"""
     total_pnl = 0.0
     total_cost = 0.0
     details = []
