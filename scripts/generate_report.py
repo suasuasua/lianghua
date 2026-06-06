@@ -279,19 +279,19 @@ function renderApp() {
   html.push('<div class="card full-width"><div class="card-header">板块相关性矩阵</div><div class="chart-container tall" id="corr-heatmap"></div></div>');
 
   // Causality (full width)
-  html.push('<div class="card full-width"><div class="card-header">Granger因果关系 <span style="font-size:12px;color:#94a3b8;font-weight:400;">原因\xe2\x86\x92结果，线越粗越显著</span></div><div class="chart-container tall" id="causality-graph"></div></div>');
+  html.push('<div class="card full-width"><div class="card-header">Granger因果关系 <span style="font-size:12px;color:#94a3b8;font-weight:400;">原因\u2192结果，线越粗越显著</span></div><div class="chart-container tall" id="causality-graph"></div></div>');
 
   // Price Trends (full width)
   html.push('<div class="card full-width"><div class="card-header">板块走势对比(基准100)</div><div class="chart-container tall" id="price-chart"></div></div>');
 
   // Cointegrated Pairs
   const pairs = DATA.cointegrated_pairs || [];
-  let cointHtml = pairs.length ? pairs.map(p => '<div class="coint-item"><span>' + p.pair[0] + ' \xe2\x86\x94 ' + p.pair[1] + '</span><span style="color:#94a3b8;">p=' + p.pvalue.toFixed(4) + '</span></div>').join('') : '<div style="padding:12px 20px;color:#64748b;font-size:13px;">未发现显著协整配对</div>';
+  let cointHtml = pairs.length ? pairs.map(p => '<div class="coint-item"><span>' + p.pair[0] + ' \u2194 ' + p.pair[1] + '</span><span style="color:#94a3b8;">p=' + p.pvalue.toFixed(4) + '</span></div>').join('') : '<div style="padding:12px 20px;color:#64748b;font-size:13px;">未发现显著协整配对</div>';
   html.push('<div class="card"><div class="card-header">协整配对</div><div class="coint-list">' + cointHtml + '</div></div>');
 
   // Pair Trading Signals
   const pt = DATA.pair_signals || [];
-  let ptHtml = pt.length ? pt.map(p => '<div class="pair-item"><span>' + p.pair + '</span><span>z=' + p.zscore + ' \xe2\x86\x92 ' + p.action + '</span></div>').join('') : '<div style="padding:12px 20px;color:#64748b;font-size:13px;">暂无配对信号</div>';
+  let ptHtml = pt.length ? pt.map(p => '<div class="pair-item"><span>' + p.pair + '</span><span>z=' + p.zscore + ' \u2192 ' + p.action + '</span></div>').join('') : '<div style="padding:12px 20px;color:#64748b;font-size:13px;">暂无配对信号</div>';
   html.push('<div class="card"><div class="card-header">配对交易信号</div><div class="pair-list">' + ptHtml + '</div></div>');
 
   document.getElementById('app').innerHTML = html.join('');
@@ -347,7 +347,7 @@ function renderCausality() {
   const chart = echarts.init(document.getElementById('causality-graph'));
   chart.setOption({
     series:[{type:'graph',layout:'force',roam:true,draggable:true,data:nodes,links:links,force:{repulsion:300,edgeLength:150},label:{show:true,fontSize:11,color:'#e2e8f0'},lineStyle:{color:'source'}}],
-    tooltip:{formatter:p=>'<b>'+(p.data.source||p.data.name)+'</b>'+(p.data.source?' \xe2\x86\x92 <b>'+p.data.target+'</b><br/>强度: '+edges.find(e=>e.cause===p.data.source&&e.effect===p.data.target).strength:'')}
+    tooltip:{formatter:p=>'<b>'+(p.data.source||p.data.name)+'</b>'+(p.data.source?' \u2192 <b>'+p.data.target+'</b><br/>强度: '+edges.find(e=>e.cause===p.data.source&&e.effect===p.data.target).strength:'')}
   });
   window.addEventListener('resize',()=>chart.resize());
 }
