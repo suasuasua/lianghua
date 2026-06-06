@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>版块轮动量化仪表盘</title>
+<script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,'Segoe UI',sans-serif;background:#0f172a;color:#e2e8f0}
+.header{background:linear-gradient(135deg,#1e293b,#0f172a);padding:24px 32px;border-bottom:1px solid #334155}
+.header h1{font-size:24px;color:#f1f5f9}
+.header .sub{font-size:13px;color:#94a3b8;margin-top:4px}
+.header .status{display:inline-block;padding:2px 10px;border-radius:10px;font-size:12px;background:#22c55e20;color:#4ade80;margin-left:12px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;padding:16px;max-width:1600px;margin:0 auto}
+.card{background:#1e293b;border-radius:12px;border:1px solid #334155;overflow:hidden}
+.card-header{padding:14px 20px;border-bottom:1px solid #334155;font-size:14px;font-weight:600;color:#f1f5f9;display:flex;justify-content:space-between;align-items:center}
+.card-header .badge{font-size:11px;padding:2px 8px;border-radius:8px;font-weight:500}
+.badge-buy{background:#22c55e20;color:#4ade80}
+.badge-sell{background:#ef444420;color:#f87171}
+.badge-hold{background:#f59e0b20;color:#fbbf24}
+.chart-container{width:100%;height:400px}
+.chart-container.tall{height:500px}
+.chart-container.short{height:300px}
+.full-width{grid-column:1/-1}
+.signal-table{padding:16px 20px}
+.signal-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #1e293b;font-size:14px}
+.signal-row:last-child{border-bottom:none}
+.signal-row .name{font-weight:500}
+.signal-row .score{font-size:12px;color:#94a3b8}
+.signal-row .action{padding:2px 10px;border-radius:8px;font-size:12px;font-weight:600}
+.metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;padding:16px 20px}
+.metric-item{text-align:center}
+.metric-item .value{font-size:22px;font-weight:700}
+.metric-item .label{font-size:11px;color:#94a3b8;margin-top:2px}
+.color-green{color:#4ade80}
+.color-red{color:#f87171}
+.color-yellow{color:#fbbf24}
+.pair-list,.coint-list{padding:12px 20px}
+.pair-item,.coint-item{display:flex;justify-content:space-between;padding:6px 0;font-size:13px;border-bottom:1px solid #1e293b}
+.pair-item:last-child,.coint-item:last-child{border-bottom:none}
+.footer{text-align:center;padding:20px;color:#475569;font-size:12px}
+@media(max-width:900px){.grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="header">
+<h1>版块轮动量化仪表盘 <span class="status">Live</span></h1>
+<div class="sub">__REPORT_DATE__ | __NUM_DAYS__交易日 | __DATE_RANGE__ | __NUM_SECTORS__个版块</div>
+</div>
+<div class="grid" id="app"></div>
+<div class="footer">由 GitHub Actions 自动生成 | 数据来源: 腾讯财经 API | 不构成投资建议</div>
+<script>
+const DATA = __DATA_JSON__;
+const COLORS = ['#3b82f6','#22c55e','#ef4444','#f59e0b','#8b5cf6','#ec4899','#06b6d4','#84cc16','#f97316','#6366f1','#14b8a6','#e11d48','#a855f7','#0ea5e9','#65a30d','#d946ef','#0284c7','#10b981','#f43f5e','#7c3aed','#0891b2','#d97706','#2563eb'];
+
+function renderApp() {
+  const signals = DATA.signals || {};
+  const bt = DATA.backtest || {};
+  const html = [];
+
+  // Signal Card
+  let signalRows = '';
+  if (signals.sectors) {
+    const buyCount = signals.actions.filter(a => a === 'buy').length;
+    signalRows = signals.sectors.map((name, i) => {
+      const action = signals.actions[i];
+      const cls = action === 'buy' ? 'badge-buy' : action === 'sell' ? 'badge-sell' : 'badge-hold';
+      const label = action === 'buy' ? 'BUY' : action === 'sell' ? 'SELL' : 'HOLD';
+      return '<div class="signal-row"><span class="name">' + name + '</span><span class="score">' + signals.rankings[i].toFixed(3) + '</span><span class="action ' + cls + '">' + label + '</span></div>';
+    }).join('');
+    html.push('<div class="card"><div class="card-header">今日交易信号 <span class="badge badge-buy">BUY ' + buyCount + '</span></div><div class="signal-table">' + signalRows + '</div></div>');
+  } else {
+    html.push('<div class="card"><div class="card-header">今日交易信号</div><div style="padding:20px;color:#64748b;">暂无信号</div></div>');
+  }
+
+  // Metrics Card
+  if (bt.metrics) {
+    const m = bt.metrics;
+    const tp = parseFloat(m.total_return_pct);
+    const sp = parseFloat(m.sharpe_ratio);
+    const items = [
+      {v: m.total_return_pct + '%', l: '总收益', c: tp >= 0 ? 'color-green' : 'color-red'},
+      {v: m.max_drawdown_pct + '%', l: '最大回撤', c: 'color-red'},
+      {v: m.sharpe_ratio, l: '夏普比率', c: sp >= 1 ? 'color-green' : sp >= 0 ? 'color-yellow' : 'color-red'},
+      {v: m.final_equity, l: '最终权益', c: 'color-green'},
+    ];
+    const metricHtml = items.map(x => '<div class="metric-item"><div class="value ' + x.c + '">' + x.v + '</div><div class="label">' + x.l + '</div></div>').join('');
+    html.push('<div class="card"><div class="card-header">回测表现</div><div class="metrics">' + metricHtml + '</div><div class="chart-container short" id="nav-chart"></div></div>');
+  }
+
+  // Correlation (full width)
+  html.push('<div class="card full-width"><div class="card-header">板块相关性矩阵</div><div class="chart-container tall" id="corr-heatmap"></div></div>');
+
+  // Causality (full width)
+  html.push('<div class="card full-width"><div class="card-header">Granger因果关系 <span style="font-size:12px;color:#94a3b8;font-weight:400;">原因\xe2\x86\x92结果，线越粗越显著</span></div><div class="chart-container tall" id="causality-graph"></div></div>');
+
+  // Price Trends (full width)
+  html.push('<div class="card full-width"><div class="card-header">板块走势对比(基准100)</div><div class="chart-container tall" id="price-chart"></div></div>');
+
+  // Cointegrated Pairs
+  const pairs = DATA.cointegrated_pairs || [];
+  let cointHtml = pairs.length ? pairs.map(p => '<div class="coint-item"><span>' + p.pair[0] + ' \xe2\x86\x94 ' + p.pair[1] + '</span><span style="color:#94a3b8;">p=' + p.pvalue.toFixed(4) + '</span></div>').join('') : '<div style="padding:12px 20px;color:#64748b;font-size:13px;">未发现显著协整配对</div>';
+  html.push('<div class="card"><div class="card-header">协整配对</div><div class="coint-list">' + cointHtml + '</div></div>');
+
+  // Pair Trading Signals
+  const pt = DATA.pair_signals || [];
+  let ptHtml = pt.length ? pt.map(p => '<div class="pair-item"><span>' + p.pair + '</span><span>z=' + p.zscore + ' \xe2\x86\x92 ' + p.action + '</span></div>').join('') : '<div style="padding:12px 20px;color:#64748b;font-size:13px;">暂无配对信号</div>';
+  html.push('<div class="card"><div class="card-header">配对交易信号</div><div class="pair-list">' + ptHtml + '</div></div>');
+
+  document.getElementById('app').innerHTML = html.join('');
+
+  // Now render charts
+  if (bt.nav) renderNav(bt.nav);
+  renderCorr();
+  renderCausality();
+  renderPrices();
+}
+
+function renderNav(nav) {
+  const chart = echarts.init(document.getElementById('nav-chart'));
+  chart.setOption({
+    grid: {left:'5%',right:'5%',top:15,bottom:20},
+    xAxis: {type:'category',data:nav.dates.filter((_,i)=>i%30===0),axisLabel:{fontSize:10,color:'#94a3b8'}},
+    yAxis: {type:'value',splitLine:{lineStyle:{color:'#1e293b'}},axisLabel:{fontSize:10,color:'#94a3b8'}},
+    series: [{type:'line',data:nav.values,smooth:true,showSymbol:false,lineStyle:{width:2,color:'#4ade80'},areaStyle:{color:{type:'linear',x:0,y:0,x2:0,y2:1,colorStops:[{offset:0,color:'#4ade8040'},{offset:1,color:'#4ade8005'}]}}}],
+    tooltip: {trigger:'axis',valueFormatter:v=>'\xc2\xa5'+v.toFixed(2)}
+  });
+  window.addEventListener('resize',()=>chart.resize());
+}
+
+function renderCorr() {
+  const c = DATA.correlation;
+  const labels = c.labels;
+  const data = [];
+  for (let i = 0; i < labels.length; i++) {
+    for (let j = 0; j < labels.length; j++) {
+      data.push([j, i, c.matrix[i][j]]);
+    }
+  }
+  const chart = echarts.init(document.getElementById('corr-heatmap'));
+  chart.setOption({
+    grid:{left:'10%',right:'3%',top:10,bottom:'12%'},
+    xAxis:{type:'category',data:labels,axisLabel:{rotate:45,fontSize:10,color:'#94a3b8'},splitArea:{show:true}},
+    yAxis:{type:'category',data:labels,axisLabel:{fontSize:10,color:'#94a3b8'},splitArea:{show:true}},
+    visualMap:{min:-0.5,max:1,inRange:{color:['#1e3a5f','#2563eb','#22c55e','#facc15','#ef4444']},calculable:true,textStyle:{color:'#94a3b8'}},
+    series:[{type:'heatmap',data:data,label:{show:false}}],
+    tooltip:{formatter:p=>'<b>'+p.value[1]+' x '+p.value[0]+'</b><br/>相关系数: '+p.value[2].toFixed(3)}
+  });
+  window.addEventListener('resize',()=>chart.resize());
+}
+
+function renderCausality() {
+  const edges = DATA.causality || [];
+  if (!edges.length) return;
+  const nodesSet = new Set();
+  edges.forEach(e=>{nodesSet.add(e.cause);nodesSet.add(e.effect);});
+  const nodes = Array.from(nodesSet).map(n=>({id:n,name:n,symbolSize:14,itemStyle:{color:'#3b82f6'}}));
+  const maxStr = Math.max(...edges.map(e=>e.strength));
+  const links = edges.map(e=>({source:e.cause,target:e.effect,lineStyle:{width:1+4*(e.strength/maxStr),curveness:0.2,color:'#facc15',opacity:0.5+0.5*(e.strength/maxStr)}}));
+  const chart = echarts.init(document.getElementById('causality-graph'));
+  chart.setOption({
+    series:[{type:'graph',layout:'force',roam:true,draggable:true,data:nodes,links:links,force:{repulsion:300,edgeLength:150},label:{show:true,fontSize:11,color:'#e2e8f0'},lineStyle:{color:'source'}}],
+    tooltip:{formatter:p=>'<b>'+(p.data.source||p.data.name)+'</b>'+(p.data.source?' \xe2\x86\x92 <b>'+p.data.target+'</b><br/>强度: '+edges.find(e=>e.cause===p.data.source&&e.effect===p.data.target).strength:'')}
+  });
+  window.addEventListener('resize',()=>chart.resize());
+}
+
+function renderPrices() {
+  const p = DATA.prices;
+  if (!p) return;
+  const chart = echarts.init(document.getElementById('price-chart'));
+  const series = DATA.sectors.map((name,i)=>({name,type:'line',data:p.data[name],smooth:true,showSymbol:false,lineStyle:{width:1.5,color:COLORS[i%COLORS.length]}}));
+  chart.setOption({
+    legend:{top:0,textStyle:{fontSize:11,color:'#94a3b8'},type:'scroll'},
+    grid:{left:'3%',right:'3%',top:50,bottom:20},
+    xAxis:{type:'category',data:p.dates.filter((_,i)=>i%30===0),axisLabel:{fontSize:10,color:'#94a3b8'}},
+    yAxis:{type:'value',splitLine:{lineStyle:{color:'#1e293b'}},axisLabel:{fontSize:10,color:'#94a3b8'}},
+    series,
+    tooltip:{trigger:'axis'}
+  });
+  window.addEventListener('resize',()=>chart.resize());
+}
+
+renderApp();
+</script>
+</body>
+</html>
