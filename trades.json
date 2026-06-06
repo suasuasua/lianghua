@@ -18,5 +18,53 @@
     "amount": 10000.0,
     "shares": 6024.0,
     "status": "成交（模拟）"
+  },
+  {
+    "time": "2026-06-06 02:06:30",
+    "action": "buy",
+    "sector": "Telecom",
+    "etf_code": "515880.SH",
+    "price": 1.663,
+    "shares": 15033.0,
+    "amount": 25000.0,
+    "pnl": 0,
+    "status": "成交（模拟）",
+    "reason": "buy_signal"
+  },
+  {
+    "time": "2026-06-06 02:06:30",
+    "action": "buy",
+    "sector": "Semicon",
+    "etf_code": "512480.SH",
+    "price": 2.091,
+    "shares": 11956.0,
+    "amount": 25000.0,
+    "pnl": 0,
+    "status": "成交（模拟）",
+    "reason": "buy_signal"
+  },
+  {
+    "time": "2026-06-06 02:06:30",
+    "action": "buy",
+    "sector": "AI",
+    "etf_code": "515070.SH",
+    "price": 2.477,
+    "shares": 10093.0,
+    "amount": 25000.0,
+    "pnl": 0,
+    "status": "成交（模拟）",
+    "reason": "buy_signal"
+  },
+  {
+    "time": "2026-06-06 02:06:30",
+    "action": "buy",
+    "sector": "Coal",
+    "etf_code": "515220.SH",
+    "price": 1.395,
+    "shares": 17921.0,
+    "amount": 25000.0,
+    "pnl": 0,
+    "status": "成交（模拟）",
+    "reason": "buy_signal"
   }
 ]

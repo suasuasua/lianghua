@@ -1,0 +1,29 @@
+{
+  "cash": 0.0,
+  "positions": {
+    "Telecom": {
+      "sector": "Telecom",
+      "shares": 15033.072760072158,
+      "avg_cost": 1.663,
+      "total_cost": 25000.0
+    },
+    "Semicon": {
+      "sector": "Semicon",
+      "shares": 11956.001912960304,
+      "avg_cost": 2.091,
+      "total_cost": 25000.0
+    },
+    "AI": {
+      "sector": "AI",
+      "shares": 10092.854259184498,
+      "avg_cost": 2.477,
+      "total_cost": 25000.0
+    },
+    "Coal": {
+      "sector": "Coal",
+      "shares": 17921.14695340502,
+      "avg_cost": 1.395,
+      "total_cost": 25000.0
+    }
+  }
+}
