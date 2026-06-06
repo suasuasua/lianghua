@@ -1,0 +1,22 @@
+[
+  {
+    "time": "2026-06-06 09:41:08",
+    "action": "buy",
+    "sector": "Telecom",
+    "etf_code": "515880.SH",
+    "price": 1.66,
+    "amount": 10000.0,
+    "shares": 6024.0,
+    "status": "成交（模拟）"
+  },
+  {
+    "time": "2026-06-06 09:41:16",
+    "action": "buy",
+    "sector": "Telecom",
+    "etf_code": "515880.SH",
+    "price": 1.66,
+    "amount": 10000.0,
+    "shares": 6024.0,
+    "status": "成交（模拟）"
+  }
+]

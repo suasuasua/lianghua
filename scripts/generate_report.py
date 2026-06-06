@@ -118,6 +118,22 @@ def run_analysis(panel):
         }
     except Exception as e:
         print(f"  Backtest failed: {e}")
+        try:
+            from trading.portfolio import load_portfolio, get_current_prices, calc_pnl, calc_portfolio_value
+            p = load_portfolio()
+            pr = get_current_prices()
+            if pr:
+                tv = calc_portfolio_value(p, pr)
+                pnl_data = calc_pnl(p, pr)
+                results["simulation"] = {
+                    "total_value": tv,
+                    "pnl": pnl_data["total_pnl"],
+                    "pnl_pct": pnl_data["total_pnl_pct"],
+                    "positions": pnl_data["details"],
+                    "cash": p.cash,
+                }
+        except Exception:
+            results["simulation"] = {}
         results["backtest"] = {}
 
     flat_corr = []
