@@ -53,6 +53,24 @@ class BacktestEngine:
             buy_list = signals[signals['signal'] == 'buy'].index.tolist()
             sell_list = signals[signals['signal'] == 'sell'].index.tolist()
 
+            # Stop-loss: check all positions
+            stop_loss = getattr(self.config, 'stop_loss_pct', 0.05)
+            for sector in list(positions.keys()):
+                price = float(current_prices[sector])
+                # Cost basis approximated from trades
+                for t in reversed(self.trades):
+                    if t.sector == sector and t.action == 'buy':
+                        avg_cost = t.cost / t.shares if t.shares > 0 else price
+                        break
+                else:
+                    avg_cost = price
+                loss_pct = (price - avg_cost) / avg_cost
+                if loss_pct <= -stop_loss:
+                    shares = positions.pop(sector)
+                    proceeds = shares * price
+                    pending_cash += proceeds
+                    self.trades.append(TradeRecord(date=str(current_date), action='sell', sector=sector, price=price, shares=shares, pnl=proceeds))
+
             # Sell: proceeds go to pending_cash (T+1)
             for sector in sell_list:
                 if sector not in positions:

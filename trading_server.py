@@ -67,6 +67,8 @@ def render_page():
     html = html.replace("__PENDING__", f"{portfolio.pending_cash:,.0f}")
     html = html.replace("__POS_COUNT__", str(len(portfolio.positions)))
     html = html.replace("__TRADE_COUNT__", str(len(trades)))
+    sl_count = len([t for t in trades if t.get("reason") == "stop_loss"])
+    html = html.replace("__SL_COUNT__", str(sl_count))
 
     # Positions
     pos_html = ""

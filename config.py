@@ -46,6 +46,7 @@ class StrategyConfig:
     top_n_buy: int = 4
     bottom_n_sell: int = 4
     signal_threshold: float = 0.6
+    stop_loss_pct: float = 0.05
     coint_entry_z: float = 2.0
     coint_exit_z: float = 0.5
 

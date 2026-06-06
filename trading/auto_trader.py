@@ -41,7 +41,35 @@ def run_auto_trade():
     portfolio.cash += portfolio.pending_cash
     portfolio.pending_cash = 0.0
 
-    # Step 2: Sell - proceeds go to pending_cash (T+1)
+    # Step 2: Stop-loss check - sell positions that hit stop-loss threshold
+    stop_loss = getattr(STRATEGY_CONFIG, 'stop_loss_pct', 0.05)
+    for sector in list(portfolio.positions.keys()):
+        pos = portfolio.positions[sector]
+        price = prices.get(sector)
+        if price is None or price <= 0:
+            continue
+        loss_pct = (price - pos.avg_cost) / pos.avg_cost
+        if loss_pct <= -stop_loss:
+            proceeds = pos.shares * price
+            pnl = proceeds - pos.total_cost
+            portfolio.pending_cash += proceeds
+            trade = {
+                "time": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                "action": "sell",
+                "sector": sector,
+                "etf_code": SECTOR_ETFS.get(sector, ""),
+                "price": round(price, 3),
+                "shares": round(pos.shares, 0),
+                "amount": round(proceeds, 2),
+                "pnl": round(pnl, 2),
+                "status": "simulated",
+                "reason": "stop_loss",
+            }
+            save_trade(trade)
+            del portfolio.positions[sector]
+            print(f"  STOP-LOSS {sector}: {pos.shares:.0f} shares x {price:.3f} = {proceeds:.2f} (loss: {loss_pct*100:.1f}%)")
+
+    # Step 3: Signal-based Sell - proceeds go to pending_cash (T+1)
     for sector in sell_list:
         if sector in portfolio.positions:
             pos = portfolio.positions[sector]
@@ -67,7 +95,7 @@ def run_auto_trade():
             del portfolio.positions[sector]
             print(f"  SELL {sector}: {pos.shares:.0f} shares x {price:.3f} = {proceeds:.2f} (PnL: {pnl:.2f}) -> pending")
 
-    # Step 3: Buy - use ONLY settled cash (T+1 proceeds NOT available)
+    # Step 4: Buy - use ONLY settled cash (T+1 proceeds NOT available)
     buys_to_execute = [s for s in buy_list if s not in portfolio.positions][:4]
     if buys_to_execute and portfolio.cash > 0:
         capital_per = portfolio.cash / len(buys_to_execute)
