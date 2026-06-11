@@ -1,6 +1,6 @@
 {
   "cash": 0.0,
-  "pending_cash": 0.0,
+  "pending_cash": 47215.09572656252,
   "positions": {
     "Telecom": {
       "sector": "Telecom",
@@ -12,18 +12,6 @@
       "sector": "Semicon",
       "shares": 11956.001912960304,
       "avg_cost": 2.091,
-      "total_cost": 25000.0
-    },
-    "AI": {
-      "sector": "AI",
-      "shares": 10092.854259184498,
-      "avg_cost": 2.477,
-      "total_cost": 25000.0
-    },
-    "Coal": {
-      "sector": "Coal",
-      "shares": 17921.14695340502,
-      "avg_cost": 1.395,
       "total_cost": 25000.0
     }
   }

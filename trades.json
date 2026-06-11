@@ -66,5 +66,29 @@
     "pnl": 0,
     "status": "成交（模拟）",
     "reason": "buy_signal"
+  },
+  {
+    "time": "2026-06-11 19:19:13",
+    "action": "sell",
+    "sector": "AI",
+    "etf_code": "515070.SH",
+    "price": 2.352,
+    "shares": 10093.0,
+    "amount": 23738.39,
+    "pnl": -1261.61,
+    "status": "simulated",
+    "reason": "stop_loss"
+  },
+  {
+    "time": "2026-06-11 19:19:13",
+    "action": "sell",
+    "sector": "Coal",
+    "etf_code": "515220.SH",
+    "price": 1.31,
+    "shares": 17921.0,
+    "amount": 23476.7,
+    "pnl": -1523.3,
+    "status": "simulated",
+    "reason": "stop_loss"
   }
 ]
