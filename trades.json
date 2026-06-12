@@ -90,5 +90,29 @@
     "pnl": -1523.3,
     "status": "simulated",
     "reason": "stop_loss"
+  },
+  {
+    "time": "2026-06-12 18:24:28",
+    "action": "buy",
+    "sector": "Coal",
+    "etf_code": "515220.SH",
+    "price": 1.318,
+    "shares": 17912.0,
+    "amount": 23607.55,
+    "pnl": 0,
+    "status": "simulated",
+    "reason": "buy_signal"
+  },
+  {
+    "time": "2026-06-12 18:24:28",
+    "action": "buy",
+    "sector": "STAR50",
+    "etf_code": "588000.SH",
+    "price": 1.756,
+    "shares": 13444.0,
+    "amount": 23607.55,
+    "pnl": 0,
+    "status": "simulated",
+    "reason": "buy_signal"
   }
 ]

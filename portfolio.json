@@ -1,6 +1,6 @@
 {
   "cash": 0.0,
-  "pending_cash": 47215.09572656252,
+  "pending_cash": 0.0,
   "positions": {
     "Telecom": {
       "sector": "Telecom",
@@ -13,6 +13,18 @@
       "shares": 11956.001912960304,
       "avg_cost": 2.091,
       "total_cost": 25000.0
+    },
+    "Coal": {
+      "sector": "Coal",
+      "shares": 17911.644812808237,
+      "avg_cost": 1.318,
+      "total_cost": 23607.54786328126
+    },
+    "STAR50": {
+      "sector": "STAR50",
+      "shares": 13443.933862916434,
+      "avg_cost": 1.756,
+      "total_cost": 23607.54786328126
     }
   }
 }
