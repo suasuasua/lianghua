@@ -154,8 +154,12 @@ def run_fetch_and_trade() -> dict:
         panel = pd.read_csv(data_file, parse_dates=["date"])
         latest_date = panel["date"].iloc[-1]
         today_str = datetime.now().strftime("%Y-%m-%d")
-        # If today is already in the data, update last row; otherwise append
-        if str(latest_date.date()) == today_str:
+        # Handle both Timestamp and string dates
+        if hasattr(latest_date, "strftime"):
+            latest_str = latest_date.strftime("%Y-%m-%d")
+        else:
+            latest_str = str(latest_date)[:10]
+        if latest_str == today_str:
             for col in panel.columns:
                 if col != "date" and col in prices:
                     panel.iloc[-1, panel.columns.get_loc(col)] = prices[col]

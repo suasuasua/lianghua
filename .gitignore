@@ -22,3 +22,6 @@ Thumbs.db
 test_*.py
 write_*.py
 b64_*.txt
+
+portfolio.json
+trades.json
