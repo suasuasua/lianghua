@@ -43,7 +43,7 @@ def _hourly_cycle():
 
         if is_market_open:
             _scheduler_status["running"] = True
-            _scheduler_status["message"] = "Market open - running cycle..."
+            _scheduler_status["message"] = "盘中运行..."
             print(f"\n{'='*50}")
             print(f"  Auto-run cycle at {now.strftime('%H:%M')}")
             print(f"{'='*50}")
@@ -58,9 +58,9 @@ def _hourly_cycle():
         else:
             _scheduler_status["running"] = False
             if not is_weekday:
-                _scheduler_status["message"] = "Weekend - market closed"
+                _scheduler_status["message"] = "周末休市"
             else:
-                _scheduler_status["message"] = "Outside market hours"
+                _scheduler_status["message"] = "非交易时间"
 
         # Wait 60 minutes
         _scheduler_status["next_run"] = (dt.now() + timedelta(hours=1)).strftime("%H:%M")
@@ -270,7 +270,7 @@ def api_realtime_pnl():
 
 if __name__ == "__main__":
     print("=" * 50)
-    print("  Quant Trading Terminal - Simulated Trading")
+    print("  量化交易终端 - 模拟实盘")
     print(f"  {datetime.now().strftime('%Y-%m-%d %H:%M')}")
     print("=" * 50)
     print(f"  http://localhost:5000")

@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Quant Trading Terminal</title>
+<title>量化交易终端</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 body{font-family:-apple-system,Segoe UI,sans-serif;background:#0f172a;color:#e2e8f0;padding:20px;font-size:14px}
@@ -39,35 +39,35 @@ td{padding:8px 12px;border-bottom:1px solid #1e293b}
 </head>
 <body>
 <div class="container">
-<h1>Quant Trading Terminal</h1>
-<div class="sub">__TIME__ | Virtual Capital: 100,000 | <span id="live-badge" style="display:inline-block;padding:1px 8px;border-radius:4px;font-size:11px;font-weight:600;background:#22c55e20;color:#4ade80">LIVE</span> Prices</div>
+<h1>量化交易终端</h1>
+<div class="sub">__TIME__ | 虚拟本金: 100,000 元 | <span id="live-badge" style="display:inline-block;padding:1px 8px;border-radius:4px;font-size:11px;font-weight:600;background:#22c55e20;color:#4ade80">LIVE</span> 价格s</div>
 <div class="bar">
-<div class="bar-item"><div class="l">Portfolio Value</div><div class="v __TOTAL_CLASS__">__TOTAL__</div></div>
-<div class="bar-item"><div class="l">Total PnL</div><div class="v __PNL_CLASS__">__PNL__ (__PNL_PCT__%)</div></div>
-<div class="bar-item"><div class="l">Cash (Settled)</div><div class="v">__CASH__</div></div>
-<div class="bar-item"><div class="l">Pending (T+1)</div><div class="v">__PENDING__</div></div>
-<div class="bar-item"><div class="l">Positions</div><div class="v">__POS_COUNT__</div></div>
-<div class="bar-item"><div class="l">Trades</div><div class="v">__TRADE_COUNT__</div></div>
-<div class="bar-item"><div class="l">Stop-Loss</div><div class="v" style="color:#f87171">__SL_COUNT__</div></div>
+<div class="bar-item"><div class="l">总资产</div><div class="v __TOTAL_CLASS__">__TOTAL__</div></div>
+<div class="bar-item"><div class="l">总盈亏</div><div class="v __PNL_CLASS__">__PNL__ (__PNL_PCT__%)</div></div>
+<div class="bar-item"><div class="l">可用资金</div><div class="v">__CASH__</div></div>
+<div class="bar-item"><div class="l">冻结(T+1)</div><div class="v">__PENDING__</div></div>
+<div class="bar-item"><div class="l">持仓</div><div class="v">__POS_COUNT__</div></div>
+<div class="bar-item"><div class="l">交易</div><div class="v">__TRADE_COUNT__</div></div>
+<div class="bar-item"><div class="l">止损</div><div class="v" style="color:#f87171">__SL_COUNT__</div></div>
 </div>
 <div style="margin-bottom:8px;padding:10px 16px;background:#1e293b;border:1px solid #334155;border-radius:10px;font-size:13px;display:flex;align-items:center;gap:16px;flex-wrap:wrap">
-<div><span id="sl-status" style="color:#4ade80">&#x25cf;</span> <span id="sl-message">Starting...</span></div>
+<div><span id="sl-status" style="color:#4ade80">&#x25cf;</span> <span id="sl-message">正在启动...</span></div>
 <div style="color:#64748b">Last: <span id="sl-last">Never</span></div>
 <div style="color:#64748b">Next: <span id="sl-next">--</span></div>
 </div><div style="margin-bottom:16px">
-<form action="/auto_trade" method="post" style="display:inline"><button class="btn btn-green">Run Auto Trade</button></form>
-<a href="/reset" class="btn" style="margin-left:8px;background:#475569">Reset</a>
+<form action="/auto_trade" method="post" style="display:inline"><button class="btn btn-green">执行自动交易</button></form>
+<a href="/reset" class="btn" style="margin-left:8px;background:#475569">重置</a>
 </div>
-<h2>Positions</h2>
+<h2>持仓</h2>
 <div class="grid">__POSITIONS__</div>
-<h2>Signals</h2>
+<h2>信号</h2>
 __SIGNALS__
-<h2>Trade History</h2>
+<h2>交易记录</h2>
 <table>
-<tr><th>Time</th><th>Action</th><th>Sector</th><th>Code</th><th>Price</th><th>Shares</th><th>Amount</th><th>PnL</th><th>Reason</th></tr>
+<tr><th>时间</th><th>方向</th><th>板块</th><th>代码</th><th>价格</th><th>数量</th><th>金额</th><th>PnL</th><th>原因</th></tr>
 __TRADES__
 </table>
-<h2>PnL History</h2>
+<h2>净值曲线</h2>
 <div id="chart" style="background:#1e293b;border-radius:10px;border:1px solid #334155;height:300px;margin-bottom:20px"></div>
 </div>
 <script>
@@ -96,7 +96,7 @@ function updateLivePnL() {
       for (var i = 0; i < d.positions.length; i++) {
         var p = d.positions[i];
         var cls = p.pnl >= 0 ? "green" : "red";
-        newHtml += "<div class=\"card\"><h3>" + p.sector + "</h3><div class=\"val " + cls + "\">" + (p.pnl >= 0 ? "+" : "") + p.pnl.toFixed(2) + "</div><div style=\"font-size:12px;color:#94a3b8\">" + p.pnl_pct + "%</div><div style=\"margin-top:8px;font-size:12px;color:#94a3b8\">Cost: " + p.avg_cost + " | Cur: " + p.current_price + " | Shares: " + p.shares + "</div></div>";
+        newHtml += "<div class=\"card\"><h3>" + p.sector + "</h3><div class=\"val " + cls + "\">" + (p.pnl >= 0 ? "+" : "") + p.pnl.toFixed(2) + "</div><div style=\"font-size:12px;color:#94a3b8\">" + p.pnl_pct + "%</div><div style=\"margin-top:8px;font-size:12px;color:#94a3b8\">Cost: " + p.avg_cost + " | Cur: " + p.current_price + " | 数量: " + p.shares + "</div></div>";
       }
       posGrid.innerHTML = newHtml;
     }
@@ -108,7 +108,7 @@ function updateLivePnL() {
 setInterval(updateLivePnL, 15000);
 updateLivePnL();
 
-// ===== PnL History Chart =====
+// ===== 净值曲线 Chart =====
 fetch("/api/pnl_history").then(function(r){return r.json()}).then(function(d){
 if(!d.data||d.data.length<2)return;
 var c=echarts.init(document.getElementById("chart"));
