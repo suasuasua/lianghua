@@ -96,7 +96,7 @@ function updateLivePnL() {
       for (var i = 0; i < d.positions.length; i++) {
         var p = d.positions[i];
         var cls = p.pnl >= 0 ? "green" : "red";
-        newHtml += "<div class=\"card\"><h3>" + p.sector + "</h3><div class=\"val " + cls + "\">" + (p.pnl >= 0 ? "+" : "") + p.pnl.toFixed(2) + "</div><div style=\"font-size:12px;color:#94a3b8\">" + p.pnl_pct + "%</div><div style=\"margin-top:8px;font-size:12px;color:#94a3b8\">Cost: " + p.avg_cost + " | Cur: " + p.current_price + " | 数量: " + p.shares + "</div></div>";
+        newHtml += "<div class=\"card\"><h3>" + p.sector + "</h3><div class=\"val " + cls + "\">" + (p.pnl >= 0 ? "+" : "") + p.pnl.toFixed(2) + "</div><div style=\"font-size:12px;color:#94a3b8\">" + p.pnl_pct + "%</div><div style=\"margin-top:8px;font-size:12px;color:#94a3b8\">成本: " + p.avg_cost + " | 现价: " + p.current_price + " | 持股: " + p.shares + "</div></div>";
       }
       posGrid.innerHTML = newHtml;
     }
