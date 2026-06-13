@@ -40,7 +40,7 @@ td{padding:8px 12px;border-bottom:1px solid #1e293b}
 <body>
 <div class="container">
 <h1>Quant Trading Terminal</h1>
-<div class="sub">__TIME__ | Virtual Capital: 100,000</div>
+<div class="sub">__TIME__ | Virtual Capital: 100,000 | <span id="live-badge" style="display:inline-block;padding:1px 8px;border-radius:4px;font-size:11px;font-weight:600;background:#22c55e20;color:#4ade80">LIVE</span> Prices</div>
 <div class="bar">
 <div class="bar-item"><div class="l">Portfolio Value</div><div class="v __TOTAL_CLASS__">__TOTAL__</div></div>
 <div class="bar-item"><div class="l">Total PnL</div><div class="v __PNL_CLASS__">__PNL__ (__PNL_PCT__%)</div></div>
@@ -71,6 +71,44 @@ __TRADES__
 <div id="chart" style="background:#1e293b;border-radius:10px;border:1px solid #334155;height:300px;margin-bottom:20px"></div>
 </div>
 <script>
+// ===== Live P&L poll =====
+function updateLivePnL() {
+  fetch("/api/realtime_pnl").then(function(r){return r.json()}).then(function(d){
+    var totalVal = d.total_value;
+    var pnl = d.pnl;
+    var pnlPct = d.pnl_pct;
+    document.getElementById("live-badge").textContent = "LIVE (" + d.live_count + "/24)";
+    // Update bar values
+    var totalEl = document.querySelector(".bar-item:nth-child(1) .v");
+    if (totalEl) {
+      totalEl.textContent = totalVal.toLocaleString("en-US", {minimumFractionDigits:2, maximumFractionDigits:2});
+      totalEl.className = "v " + (totalVal >= 100000 ? "green" : "red");
+    }
+    var pnlEl = document.querySelector(".bar-item:nth-child(2) .v");
+    if (pnlEl) {
+      pnlEl.textContent = (pnl >= 0 ? "+" : "") + pnl.toLocaleString("en-US", {minimumFractionDigits:2, maximumFractionDigits:2}) + " (" + (pnlPct >= 0 ? "+" : "") + pnlPct.toFixed(2) + "%)";
+      pnlEl.className = "v " + (pnl >= 0 ? "green" : "red");
+    }
+    // Update positions grid
+    var posGrid = document.querySelector(".grid");
+    if (posGrid && d.positions && d.positions.length > 0) {
+      var newHtml = "";
+      for (var i = 0; i < d.positions.length; i++) {
+        var p = d.positions[i];
+        var cls = p.pnl >= 0 ? "green" : "red";
+        newHtml += "<div class=\"card\"><h3>" + p.sector + "</h3><div class=\"val " + cls + "\">" + (p.pnl >= 0 ? "+" : "") + p.pnl.toFixed(2) + "</div><div style=\"font-size:12px;color:#94a3b8\">" + p.pnl_pct + "%</div><div style=\"margin-top:8px;font-size:12px;color:#94a3b8\">Cost: " + p.avg_cost + " | Cur: " + p.current_price + " | Shares: " + p.shares + "</div></div>";
+      }
+      posGrid.innerHTML = newHtml;
+    }
+    // Update cash
+    var cashEl = document.querySelector(".bar-item:nth-child(3) .v");
+    if (cashEl) cashEl.textContent = d.cash.toLocaleString("en-US");
+  }).catch(function(){}); // ignore errors silently
+}
+setInterval(updateLivePnL, 15000);
+updateLivePnL();
+
+// ===== PnL History Chart =====
 fetch("/api/pnl_history").then(function(r){return r.json()}).then(function(d){
 if(!d.data||d.data.length<2)return;
 var c=echarts.init(document.getElementById("chart"));
@@ -81,9 +119,8 @@ yAxis:{type:"value",splitLine:{lineStyle:{color:"#1e293b"}},axisLabel:{fontSize:
 series:[{name:"NAV",type:"line",data:d.data.map(function(p){return p.value}),smooth:true,showSymbol:false,lineStyle:{width:2,color:"#3b82f6"},areaStyle:{color:{type:"linear",x:0,y:0,x2:0,y2:1,colorStops:[{offset:0,color:"#3b82f640"},{offset:1,color:"#3b82f605"}]}}}],
 tooltip:{trigger:"axis"}});
 window.addEventListener("resize",function(){c.resize()});});
-</script>
-<script>
-// Auto-refresh page every 10min when market is open
+
+// ===== Scheduler status poll =====
 setInterval(function() {
   fetch("/api/status").then(function(r){return r.json()}).then(function(s){
     document.getElementById("sl-status").style.color = s.running ? "#4ade80" : "#fbbf24";

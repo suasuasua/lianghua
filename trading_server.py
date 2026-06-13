@@ -227,6 +227,37 @@ def api_status():
     return jsonify(_scheduler_status)
 
 
+
+
+@app.route("/api/realtime_pnl")
+def api_realtime_pnl():
+    """Portfolio P&L calculated with live market prices"""
+    from src.data.fetcher import DataFetcher
+    portfolio = load_portfolio()
+    # Fetch live prices
+    fetcher = DataFetcher()
+    live_prices = fetcher.fetch_realtime_quotes()
+    # Merge with cached prices for any sectors not in live feed
+    cached = get_current_prices()
+    for k, v in cached.items():
+        if k not in live_prices:
+            live_prices[k] = v
+    # Calculate with live prices
+    total_value = calc_portfolio_value(portfolio, live_prices)
+    pnl_data = calc_pnl(portfolio, live_prices)
+    pnl = total_value - 100000
+    pnl_pct = (pnl / 100000) * 100
+    return jsonify({
+        "total_value": round(total_value, 2),
+        "pnl": round(pnl, 2),
+        "pnl_pct": round(pnl_pct, 2),
+        "cash": portfolio.cash,
+        "pending_cash": portfolio.pending_cash,
+        "positions": pnl_data.get("details", []),
+        "live_count": len(live_prices),
+    })
+
+
 if __name__ == "__main__":
     print("=" * 50)
     print("  Quant Trading Terminal - Simulated Trading")
