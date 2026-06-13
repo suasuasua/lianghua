@@ -2,8 +2,6 @@
 # -*- coding: utf-8 -*-
 """
 Quant Trading Terminal - Simulated Trading
-Cost:  python trading_server.py
-Cost:  http://localhost:5000
 """
 import json, sys, pathlib
 from datetime import datetime
@@ -141,7 +139,7 @@ def render_page():
 <h3>{d["sector"]}</h3>
 <div class="val {pc}">{d["pnl"]:+,.2f}</div>
 <div style="font-size:12px;color:#94a3b8">{d["pnl_pct"]}%</div>
-<div style="margin-top:8px;font-size:12px;color:#94a3b8">Cost: {d["avg_cost"]} | Cur: {d["current_price"]} | Shares: {d["shares"]}</div>
+<div style="margin-top:8px;font-size:12px;color:#94a3b8">成本: {d["avg_cost"]} | 现价: {d["current_price"]} | 持股: {d["shares"]}</div>
 </div>"""
     else:
         pos_html = '<div class="card"><h3>No Positions</h3><p style="color:#64748b;margin-top:4px;font-size:13px">Run Auto Trade to start trading.</p></div>'
