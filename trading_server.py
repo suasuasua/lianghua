@@ -80,7 +80,17 @@ TEMPLATE_FILE = ROOT / "trading" / "template.html"
 
 def render_page():
     portfolio = load_portfolio()
-    prices = get_current_prices()
+    # Try live prices first, fall back to cached CSV
+    try:
+        from src.data.fetcher import DataFetcher
+        fetcher = DataFetcher()
+        live_prices = fetcher.fetch_realtime_quotes()
+        if live_prices:
+            prices = live_prices
+        else:
+            prices = get_current_prices()
+    except Exception:
+        prices = get_current_prices()
     total_value = calc_portfolio_value(portfolio, prices)
     pnl_data = calc_pnl(portfolio, prices)
     pnl = total_value - 100000
@@ -99,7 +109,7 @@ def render_page():
                     signals.append({
                         "name": sector, "score": round(float(row["total"]), 3),
                         "signal": row["signal"],
-                        "price": float(latest.get(sector, 0)),
+                        "price": float(prices.get(sector, latest.get(sector, 0))),
                         "etf_code": SECTOR_ETFS.get(sector, ""),
                     })
 
