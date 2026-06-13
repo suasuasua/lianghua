@@ -131,3 +131,47 @@ def run_auto_trade():
 
 if __name__ == "__main__":
     run_auto_trade()
+
+def run_fetch_and_trade() -> dict:
+    """Fetch real-time data, then execute auto-trade cycle. Returns status dict."""
+    result = {"status": "ok", "message": "", "time": ""}
+    from datetime import datetime
+    from src.data.fetcher import DataFetcher
+    result["time"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+    # Step 1: Fetch realtime prices
+    print("\n=== Hourly Cycle: Fetching realtime prices ===")
+    fetcher = DataFetcher()
+    prices = fetcher.fetch_realtime_quotes()
+    if not prices:
+        result["status"] = "error"
+        result["message"] = "Failed to fetch realtime prices"
+        return result
+
+    # Step 2: Update sector_data.csv with latest realtime close
+    data_file = ROOT / "sector_data.csv"
+    if data_file.exists():
+        panel = pd.read_csv(data_file, parse_dates=["date"])
+        latest_date = panel["date"].iloc[-1]
+        today_str = datetime.now().strftime("%Y-%m-%d")
+        # If today is already in the data, update last row; otherwise append
+        if str(latest_date.date()) == today_str:
+            for col in panel.columns:
+                if col != "date" and col in prices:
+                    panel.iloc[-1, panel.columns.get_loc(col)] = prices[col]
+        else:
+            new_row = {"date": today_str}
+            for col in panel.columns:
+                if col != "date":
+                    new_row[col] = prices.get(col, panel[col].iloc[-1])
+            panel = pd.concat([panel, pd.DataFrame([new_row])], ignore_index=True)
+        panel.to_csv(data_file, index=False)
+
+    # Step 3: Run auto-trade with realtime prices
+    print("\n=== Executing trades ===")
+    run_auto_trade()
+
+    result["message"] = f"Auto-trade completed at {result['time']}"
+    return result
+
+run_fetch_and_trade = run_fetch_and_trade

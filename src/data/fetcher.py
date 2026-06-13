@@ -12,8 +12,6 @@ import pandas as pd
 import requests
 
 from config import DATA_CONFIG
-
-
 class DataFetcher:
     """A-share sector ETF data fetcher from Tencent QQ Finance API"""
 
@@ -128,3 +126,53 @@ class DataFetcher:
             print(f"  Date range: {panel['date'].iloc[0].date()} ~ {panel['date'].iloc[-1].date()}")
 
         return panel
+
+    def fetch_realtime_quotes(self) -> dict:
+        """Fetch real-time ETF prices from Tencent quote API"""
+        codes = []
+        name_map = {}
+        for name, sym in self.config.sector_etfs.items():
+            secid = self._parse_secid(sym)
+            codes.append(secid)
+            name_map[secid] = name
+        prices = {}
+        for i in range(0, len(codes), 50):
+            batch = codes[i:i+50]
+            url = "http://qt.gtimg.cn/q=" + ",".join(batch)
+            try:
+                resp = self._session.get(url, timeout=10)
+                resp.encoding = "gbk"
+                for line in resp.text.strip().split(";"):
+                    if not line or "=" not in line:
+                        continue
+                    parts = line.split("=", 1)
+                    if len(parts) < 2:
+                        continue
+                    value_str = parts[1].strip(chr(34)).strip(";")
+                    fields = value_str.split("~")
+                    if len(fields) < 6:
+                        continue
+                    try:
+                        cur_price = float(fields[5]) if fields[5] else 0
+                    except ValueError:
+                        continue
+                    code = fields[2]
+                    if code in name_map:
+                        if cur_price > 0:
+                            prices[code] = cur_price
+                    else:
+                        for secid, nm in name_map.items():
+                            if code.endswith(secid) or secid.endswith(code):
+                                if cur_price > 0:
+                                    prices[secid] = cur_price
+                                break
+            except Exception as e:
+                print("  [WARN] Realtime fetch failed:", e)
+            time.sleep(0.1)
+        result = {}
+        for secid, name in name_map.items():
+            if secid in prices:
+                result[name] = prices[secid]
+        print(f"  Realtime prices: {len(result)}/{len(codes)} sectors")
+        return result
+

@@ -21,6 +21,58 @@ from trading.portfolio import (
 )
 from trading.auto_trader import run_auto_trade
 
+
+
+import threading, time
+from datetime import datetime as dt, timedelta
+
+# Auto-run scheduler state
+_scheduler_status = {"running": False, "last_run": "Never", "next_run": "Waiting...", "message": ""}
+
+def _hourly_cycle():
+    """Fetch + trade every hour during market hours"""
+    while True:
+        now = dt.now()
+        # A-share market hours: Mon-Fri, 9:30-11:30, 13:00-15:00
+        is_weekday = now.weekday() < 5
+        hour = now.hour
+        minute = now.minute
+        in_morning = (hour == 9 and minute >= 30) or (hour == 10) or (hour == 11 and minute <= 30)
+        in_afternoon = (hour >= 13 and hour < 15)
+        is_market_open = is_weekday and (in_morning or in_afternoon)
+
+        if is_market_open:
+            _scheduler_status["running"] = True
+            _scheduler_status["message"] = "Market open - running cycle..."
+            print(f"\n{'='*50}")
+            print(f"  Auto-run cycle at {now.strftime('%H:%M')}")
+            print(f"{'='*50}")
+            try:
+                from trading.auto_trader import run_fetch_and_trade
+                status = run_fetch_and_trade()
+                _scheduler_status["last_run"] = now.strftime("%H:%M")
+                _scheduler_status["message"] = status.get("message", "ok")
+            except Exception as e:
+                _scheduler_status["message"] = f"Error: {e}"
+                print(f"  Auto-run error: {e}")
+        else:
+            _scheduler_status["running"] = False
+            if not is_weekday:
+                _scheduler_status["message"] = "Weekend - market closed"
+            else:
+                _scheduler_status["message"] = "Outside market hours"
+
+        # Wait 60 minutes
+        _scheduler_status["next_run"] = (dt.now() + timedelta(hours=1)).strftime("%H:%M")
+        time.sleep(3600)
+
+def start_scheduler():
+    """Start hourly scheduler in background"""
+    thread = threading.Thread(target=_hourly_cycle, daemon=True)
+    thread.start()
+    print("  Auto-run scheduler started (every hour during market hours)")
+
+
 app = Flask(__name__)
 DATA_FILE = ROOT / "sector_data.csv"
 TEMPLATE_FILE = ROOT / "trading" / "template.html"
@@ -170,10 +222,16 @@ def api_portfolio():
     })
 
 
+@app.route("/api/status")
+def api_status():
+    return jsonify(_scheduler_status)
+
+
 if __name__ == "__main__":
     print("=" * 50)
     print("  Quant Trading Terminal - Simulated Trading")
     print(f"  {datetime.now().strftime('%Y-%m-%d %H:%M')}")
     print("=" * 50)
     print(f"  http://localhost:5000")
+    start_scheduler()
     app.run(host="0.0.0.0", port=5000, debug=True)

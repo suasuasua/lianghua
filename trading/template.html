@@ -50,7 +50,11 @@ td{padding:8px 12px;border-bottom:1px solid #1e293b}
 <div class="bar-item"><div class="l">Trades</div><div class="v">__TRADE_COUNT__</div></div>
 <div class="bar-item"><div class="l">Stop-Loss</div><div class="v" style="color:#f87171">__SL_COUNT__</div></div>
 </div>
-<div style="margin-bottom:16px">
+<div style="margin-bottom:8px;padding:10px 16px;background:#1e293b;border:1px solid #334155;border-radius:10px;font-size:13px;display:flex;align-items:center;gap:16px;flex-wrap:wrap">
+<div><span id="sl-status" style="color:#4ade80">&#x25cf;</span> <span id="sl-message">Starting...</span></div>
+<div style="color:#64748b">Last: <span id="sl-last">Never</span></div>
+<div style="color:#64748b">Next: <span id="sl-next">--</span></div>
+</div><div style="margin-bottom:16px">
 <form action="/auto_trade" method="post" style="display:inline"><button class="btn btn-green">Run Auto Trade</button></form>
 <a href="/reset" class="btn" style="margin-left:8px;background:#475569">Reset</a>
 </div>
@@ -77,6 +81,17 @@ yAxis:{type:"value",splitLine:{lineStyle:{color:"#1e293b"}},axisLabel:{fontSize:
 series:[{name:"NAV",type:"line",data:d.data.map(function(p){return p.value}),smooth:true,showSymbol:false,lineStyle:{width:2,color:"#3b82f6"},areaStyle:{color:{type:"linear",x:0,y:0,x2:0,y2:1,colorStops:[{offset:0,color:"#3b82f640"},{offset:1,color:"#3b82f605"}]}}}],
 tooltip:{trigger:"axis"}});
 window.addEventListener("resize",function(){c.resize()});});
+</script>
+<script>
+// Auto-refresh page every 10min when market is open
+setInterval(function() {
+  fetch("/api/status").then(function(r){return r.json()}).then(function(s){
+    document.getElementById("sl-status").style.color = s.running ? "#4ade80" : "#fbbf24";
+    document.getElementById("sl-message").textContent = s.message || "-";
+    document.getElementById("sl-last").textContent = s.last_run || "Never";
+    document.getElementById("sl-next").textContent = s.next_run || "--";
+  });
+}, 10000);
 </script>
 <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
 </body>
