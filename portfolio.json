@@ -1,19 +1,24 @@
 {
   "cash": 0.0,
+<<<<<<< Updated upstream
   "pending_cash": 0.0,
+=======
+  "pending_cash": 22939.068100358425,
+>>>>>>> Stashed changes
   "positions": {
     "Telecom": {
       "sector": "Telecom",
-      "shares": 15033.072760072158,
-      "avg_cost": 1.663,
+      "shares": 15060.240963855422,
+      "avg_cost": 1.66,
       "total_cost": 25000.0
     },
     "Semicon": {
       "sector": "Semicon",
-      "shares": 11956.001912960304,
-      "avg_cost": 2.091,
+      "shares": 11961.722488038278,
+      "avg_cost": 2.09,
       "total_cost": 25000.0
     },
+<<<<<<< Updated upstream
     "Coal": {
       "sector": "Coal",
       "shares": 17911.644812808237,
@@ -25,6 +30,13 @@
       "shares": 13443.933862916434,
       "avg_cost": 1.756,
       "total_cost": 23607.54786328126
+=======
+    "AI": {
+      "sector": "AI",
+      "shares": 10092.854259184498,
+      "avg_cost": 2.477,
+      "total_cost": 25000.0
+>>>>>>> Stashed changes
     }
   }
 }
