@@ -168,7 +168,7 @@ def render_page():
             pc2 = "green" if pnl_val > 0 else "red"
         pnl_display = f"{pnl_val:+,.0f}" if pnl_val else "-"
         tr_html += f"""<tr>
-<td style="font-size:12px;color:#94a3b8">{t["time"][-8:]}</td>
+<td style="font-size:12px;color:#94a3b8">{t["time"][:16]}</td>
 <td style="color:{tc}">{ta}</td>
 <td>{t["sector"]}</td><td>{t["etf_code"]}</td>
 <td>{t["price"]}</td><td>{int(t.get("shares",0))}</td>
